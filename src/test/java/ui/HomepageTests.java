@@ -36,9 +36,9 @@ public class HomepageTests {
     @CsvFileSource(resources = "/testData.csv", numLinesToSkip = 1)
     void toCheckChaptersElementsTest(String chapterGroup, String chapterElements,String title) {
 
-        List<WebElement> chapter3elements = driver.findElements(By.xpath(CHAPTER_LOCATOR + chapterGroup));
+        int size = driver.findElements(By.xpath(CHAPTER_LOCATOR + chapterGroup)).size();
 
-        for (int i = 0; i < chapter3elements.size(); i++) {
+        for (int i = 0; i < size; i++) {
 
             List<WebElement> el = driver.findElements(By.xpath(CHAPTER_LOCATOR + chapterGroup));
 
