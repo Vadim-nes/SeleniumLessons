@@ -6,16 +6,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.html5.LocalStorage;
+import org.openqa.selenium.html5.SessionStorage;
+import org.openqa.selenium.html5.WebStorage;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
-import java.util.Set;
+import java.util.List;
 
-public class Frameswindowswaiters {
+public class FramesWindowsWaiters {
 
     private WebDriver driver;
-    private WebDriverWait waiter;
+    private WebDriverWait waiter2;
+    private WebDriverWait waiter10;
 
     private static final String BASE_URL = "https://bonigarcia.dev/selenium-webdriver-java/";
 
@@ -23,7 +26,8 @@ public class Frameswindowswaiters {
     void setup() {
 
         driver = new ChromeDriver();
-        waiter = new WebDriverWait(driver, Duration.ofSeconds(2));
+        waiter2 = new WebDriverWait(driver, Duration.ofSeconds(2));
+        waiter10 = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.manage().window().maximize();
         driver.get(BASE_URL);
     }
@@ -122,13 +126,13 @@ public class Frameswindowswaiters {
         driver.findElement(By.xpath("//a[@href='dialog-boxes.html']")).click();
 
         driver.findElement(By.id("my-alert")).click();
-        waiter.until(ExpectedConditions.alertIsPresent());
+        waiter2.until(ExpectedConditions.alertIsPresent());
         Alert alert = driver.switchTo().alert();
 
 
         Assertions.assertEquals("Hello world!", alert.getText());
         alert.accept();
-        waiter.until(ExpectedConditions.not(ExpectedConditions.alertIsPresent()));
+        waiter2.until(ExpectedConditions.not(ExpectedConditions.alertIsPresent()));
         Thread.sleep(1000);
 
         WebElement confirmAlert = driver.findElement(By.id("my-confirm"));
@@ -159,8 +163,36 @@ public class Frameswindowswaiters {
 
         driver.findElement(By.id("my-modal")).click();
         WebElement saveButton = driver.findElement(By.xpath("//button[normalize-space() = 'Save changes']"));
-        waiter.until(ExpectedConditions.elementToBeClickable(saveButton)).click();
+        waiter2.until(ExpectedConditions.elementToBeClickable(saveButton)).click();
         Thread.sleep(1000);
         Assertions.assertEquals("You chose: Save changes",driver.findElement(By.id("modal-text")).getText());
+    }
+
+    @Test
+    void testWebStorage() {
+        driver.findElement(By.xpath("//a[@href='web-storage.html']")).click();
+
+        WebStorage webStorage = (WebStorage) driver;
+
+        LocalStorage localStorage = webStorage.getLocalStorage();
+        System.out.printf("Local storage elements: {%s}\n", localStorage.size());
+
+        SessionStorage sessionStorage = webStorage.getSessionStorage();
+        sessionStorage.keySet()
+                .forEach(key -> System.out.printf("Session storage: {%s}={%s}\n", key, sessionStorage.getItem(key)));
+        Assertions.assertEquals(2,(sessionStorage.size()));
+
+        sessionStorage.setItem("new element", "new value");
+        Assertions.assertEquals(3,(sessionStorage.size()));
+
+        driver.findElement(By.id("display-session")).click();
+    }
+
+    @Test
+    void testImages() {
+        driver.findElement(By.xpath("//a[@href='loading-images.html']")).click();
+        waiter10.until(ExpectedConditions.textToBe(By.cssSelector(".col-12 > #text"), "Done!"));
+
+        Assertions.assertEquals(4, driver.findElements(By.cssSelector("#image-container > img")).size());
     }
 }
